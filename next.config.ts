@@ -1,5 +1,8 @@
 import type { NextConfig } from 'next'
 
+// 사내 네트워크 self-signed 인증서 대응
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
