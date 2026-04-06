@@ -1,0 +1,94 @@
+{
+  "tasks": [
+    {
+      "id": "47c326ec-de59-4e70-a6b0-e2c116810bdc",
+      "name": "코드 품질 검사 및 빌드 검증",
+      "description": "prettier 포맷 수정 후 check-all 완전 통과, 프로덕션 빌드 성공 확인.\n\n현재 상태:\n- typecheck, lint: 이미 통과\n- format 경고 파일: .mcp.json, docs/ROADMAP.md, shrimp-rules.md, .claude/agents/shrimp_data/WebGUI.md\n\n수행 절차:\n1. .prettierignore에 .claude/ 디렉토리 추가 (AI 생성 파일 제외)\n2. npm run format:check 재실행으로 경고 감소 확인\n3. 남은 파일 npm run format으로 수정\n4. npm run check-all 완전 통과 확인\n5. npm run build 실행 및 성공 확인",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-04-06T14:00:21.058Z",
+      "updatedAt": "2026-04-06T14:00:21.058Z",
+      "relatedFiles": [
+        {
+          "path": ".prettierignore",
+          "type": "TO_MODIFY",
+          "description": ".claude/ 디렉토리 추가"
+        },
+        {
+          "path": "package.json",
+          "type": "REFERENCE",
+          "description": "check-all, build 스크립트 확인"
+        },
+        {
+          "path": "next.config.ts",
+          "type": "REFERENCE",
+          "description": "빌드 설정 확인"
+        }
+      ],
+      "implementationGuide": "1. .prettierignore 파일 읽기\n2. .claude/ 추가 후 저장\n3. npm run format:check 실행 → 남은 경고 파일만 npm run format으로 수정\n4. npm run check-all 실행 → 모두 통과 확인\n5. npm run build 실행 → 빌드 성공 확인\n6. 빌드 결과물(.next/) 확인",
+      "verificationCriteria": "npm run check-all 출력에 에러/경고 없음. npm run build 출력에 에러 없음. .next/ 디렉토리 생성 확인.",
+      "analysisResult": "SQL 쿼리 라이브러리 Phase 5(Task 007): 프로덕션 빌드 검증 및 Vercel 배포. Phase 1~4 완료, typecheck/lint 통과, format 4개 파일 수정 필요. 3개 순차 작업으로 분리."
+    },
+    {
+      "id": "25e60953-aee1-43bb-bb17-65344e58a1f4",
+      "name": "Vercel 배포 설정",
+      "description": "GitHub 저장소 연결 및 Vercel 환경 변수 등록 후 첫 배포 실행.\n\n수행 절차:\n1. git push로 최신 코드 GitHub에 업로드\n2. Vercel 대시보드에서 프로젝트 생성 (GitHub 연결)\n3. 환경 변수 등록: NOTION_API_KEY, NOTION_DATABASE_ID\n4. 배포 실행 및 운영 URL 확인\n\n주의사항:\n- next.config.ts의 NODE_TLS_REJECT_UNAUTHORIZED=0은 사내망 self-signed 인증서 대응용으로, Notion 공개 API는 정상 SSL이므로 Vercel 환경에서 문제 없음\n- 환경 변수는 Vercel 대시보드 > Settings > Environment Variables에 등록",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "47c326ec-de59-4e70-a6b0-e2c116810bdc"
+        }
+      ],
+      "createdAt": "2026-04-06T14:00:21.058Z",
+      "updatedAt": "2026-04-06T14:00:21.058Z",
+      "relatedFiles": [
+        {
+          "path": ".env.local.example",
+          "type": "REFERENCE",
+          "description": "필요한 환경 변수 목록 확인"
+        },
+        {
+          "path": "next.config.ts",
+          "type": "REFERENCE",
+          "description": "배포 설정 확인"
+        }
+      ],
+      "implementationGuide": "1. git status로 미커밋 파일 확인\n2. 변경사항 커밋 후 git push origin main\n3. Vercel 대시보드(vercel.com) 접속 → New Project → Import Git Repository\n4. 환경 변수 설정: NOTION_API_KEY, NOTION_DATABASE_ID\n5. Deploy 클릭 → 배포 로그 확인\n6. 배포 완료 후 운영 URL 기록",
+      "verificationCriteria": "Vercel 대시보드에서 배포 상태 'Ready' 확인. 운영 URL 접속 시 메인 페이지 로드 성공. Vercel 빌드 로그에 에러 없음.",
+      "analysisResult": "SQL 쿼리 라이브러리 Phase 5(Task 007): 프로덕션 빌드 검증 및 Vercel 배포. Phase 1~4 완료, typecheck/lint 통과, format 4개 파일 수정 필요. 3개 순차 작업으로 분리."
+    },
+    {
+      "id": "bf018eaa-7935-4a48-9305-a4ddf3d9408b",
+      "name": "배포 환경 E2E 테스트",
+      "description": "Playwright MCP를 사용하여 배포된 운영 환경에서 핵심 기능 E2E 테스트 수행.\n\n테스트 시나리오:\n1. 메인 페이지 로드 확인 (쿼리 목록 표시)\n2. 키워드 검색 기능 (검색 입력 → 결과 필터링)\n3. DBMS 필터 선택 → 쿼리 필터링\n4. 태그 필터 클릭 → 쿼리 필터링\n5. 필터 초기화 버튼 동작\n6. 쿼리 카드 클릭 → 상세 페이지 이동\n7. 상세 페이지 SQL 코드 표시 확인\n8. 복사 버튼 클릭 → 토스트 메시지 표시\n9. 뒤로 가기 버튼으로 목록 복귀\n10. 다크/라이트 모드 토글",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "25e60953-aee1-43bb-bb17-65344e58a1f4"
+        }
+      ],
+      "createdAt": "2026-04-06T14:00:21.058Z",
+      "updatedAt": "2026-04-06T14:00:21.058Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/page.tsx",
+          "type": "REFERENCE",
+          "description": "메인 페이지 구조 파악"
+        },
+        {
+          "path": "src/app/queries/[id]/page.tsx",
+          "type": "REFERENCE",
+          "description": "상세 페이지 구조 파악"
+        },
+        {
+          "path": "src/components/queries/search-filter.tsx",
+          "type": "REFERENCE",
+          "description": "검색/필터 컴포넌트 동작 파악"
+        }
+      ],
+      "implementationGuide": "1. Playwright MCP browser_navigate로 운영 URL 접속\n2. browser_snapshot으로 초기 상태 확인\n3. 검색 인풋 클릭 → 키워드 입력 → 결과 확인\n4. DBMS 셀렉트 선택 → URL 변경 및 필터 적용 확인\n5. 태그 배지 클릭 → URL 변경 및 필터 적용 확인\n6. 필터 초기화 버튼 클릭 → 전체 목록 복귀 확인\n7. 쿼리 카드 클릭 → /queries/[id] URL 이동 확인\n8. SQL 코드 블록 표시 확인\n9. 복사 버튼 클릭 → 토스트 표시 확인\n10. 뒤로 가기 클릭 → 메인 페이지 복귀 확인",
+      "verificationCriteria": "10개 테스트 시나리오 모두 통과. Playwright 스냅샷에서 각 기능 정상 동작 확인. 에러 콘솔 메시지 없음.",
+      "analysisResult": "SQL 쿼리 라이브러리 Phase 5(Task 007): 프로덕션 빌드 검증 및 Vercel 배포. Phase 1~4 완료, typecheck/lint 통과, format 4개 파일 수정 필요. 3개 순차 작업으로 분리."
+    }
+  ]
+}
